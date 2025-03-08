@@ -42,7 +42,6 @@ class MainTabbarViewController: UITabBarController {
     
     func createViewController(viewController:UIViewController,name:String,image:String)->UIViewController{
         let viewController = UINavigationController(rootViewController: viewController)
-        viewController.navigationBar.prefersLargeTitles = true
         viewController.tabBarItem = createTabBarItem(name: name, image: image)
         return viewController
     }
