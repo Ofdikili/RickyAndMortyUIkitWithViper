@@ -12,8 +12,17 @@ class MainTabbarViewController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        configureTabbarApparance()
         configureTabs()
      }
+    
+    func configureTabbarApparance(){
+        let apparance = UITabBarAppearance()
+        apparance.configureWithOpaqueBackground()
+        apparance.backgroundColor = UIColor.gray.withAlphaComponent(0.1)
+        tabBar.standardAppearance = apparance
+        tabBar.scrollEdgeAppearance = apparance
+    }
     
     func configureTabs(){
         let charactersVC = createViewController(
