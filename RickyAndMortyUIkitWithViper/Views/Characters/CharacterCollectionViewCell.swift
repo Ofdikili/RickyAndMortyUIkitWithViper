@@ -83,7 +83,6 @@ class CharacterCollectionViewCell: UICollectionViewCell {
             switch result {
             case .success(let data):
                 DispatchQueue.main.async {
-                    print("Image get from network")
                     self?.characterImage.image = UIImage(data: data)
                 }
             case .failure(let error):

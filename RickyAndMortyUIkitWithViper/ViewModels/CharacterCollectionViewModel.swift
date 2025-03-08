@@ -32,18 +32,14 @@ struct CharacterCollectionViewModel {
             completion(.failure(ServiceFailures.badUrl))
             return
         }
-        let task =  URLSession.shared.dataTask(with: url){
-            (data,_,error) in
-                if error != nil {
-                       completion(.failure(ServiceFailures.invalidRequest))
-                       return
-                   }
-                   guard let data else {
-                       completion(.failure(ServiceFailures.noData))
-                       return
-                   }
+        ImageLoader.shared.getImage(imageUrl: url){
+            result in
+            switch result{
+            case .success(let data):
                 completion(.success(data))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
-        task.resume()
     }
 }
