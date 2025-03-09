@@ -13,10 +13,12 @@ class CharactersViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        charecterUI.viewModel.delegate = self
         navigationItem.title = "Characters"
         view.addSubview(charecterUI) 
         configureConstraint()
     }
+    
     func configureConstraint(){
         NSLayoutConstraint.activate([
             charecterUI.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
@@ -26,5 +28,22 @@ class CharactersViewController: UIViewController {
         ])
     }
 }
+
+extension CharactersViewController : CharesticUIViewModelDelegate {
+    func didAddNewCharacters(_ indexPaths : [IndexPath]) {
+        charecterUI.characterUICollectionView.performBatchUpdates{
+            charecterUI.characterUICollectionView.insertItems(at: indexPaths)
+        }
+    }
+    
+    func didSelectCharacter(_ character: CharacterModel) {
+        print(character.name)
+        navigationController?.pushViewController(CharacterDetailViewController(), animated: true)
+    }
+    
+    
+}
+
+
 
 

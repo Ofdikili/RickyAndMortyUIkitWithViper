@@ -8,17 +8,34 @@
 import Foundation
 import UIKit
 
-class CharesticUIViewModel : NSObject{
+protocol CharesticUIViewModelDelegate : AnyObject{
+    func didSelectCharacter(_ character : CharacterModel)
+    func didAddNewCharacters(_ indexPaths : [IndexPath])
+}
+
+class CharesticUIViewModel : NSObject {
     
+    var isLoadingMoreCharacter = false
+    
+    weak var delegate : CharesticUIViewModelDelegate?
+
     var characters : [CharacterModel] = []{
         didSet{
-            collectionCharecters = characters.compactMap {
-                CharacterCollectionViewModel(name: $0.name, status: $0.status, imageUrl: URL(string: $0.image))
-                   }
-        }
+            for character in characters {
+                let characterCollection  = CharacterCollectionViewModel(name: character.name, status: character.status, imageUrl: URL(string: character.image))
+                if !collectionCharecters.contains(characterCollection) {
+                    collectionCharecters.append(characterCollection)
+                    }
+         } }
     }
     
+    var characterInfoModel : GetAllCharactersResponse.Info? = nil
+    
     var collectionCharecters : [CharacterCollectionViewModel] = []
+    
+    public var shouldShowLoadMoreIndicator : Bool {
+            return characterInfoModel?.next != nil
+    }
     
     func getCharacters(){
         ServiceManager.shared.execute(RequestManager.listCharactersRequest, expecting: GetAllCharactersResponse.self){
@@ -26,9 +43,48 @@ class CharesticUIViewModel : NSObject{
             switch result{
             case .success(let responseModel):
                 self?.characters = responseModel.results
+                self?.characterInfoModel = responseModel.info
             case .failure(let error):
                 print(error)
             
+            }
+        }
+    }
+    
+    func fetchMoreCharacter(url:URL){
+        guard !isLoadingMoreCharacter   else {  return }
+        self.isLoadingMoreCharacter = true
+        guard let request = RequestManager(url: url) else {
+                    isLoadingMoreCharacter = false
+                    return
+       }
+       ServiceManager.shared.execute(request, expecting: GetAllCharactersResponse.self){
+           [weak self] result in
+           guard let strongSelf = self else{return}
+            switch result{
+            case .success(let responseModel):
+                let moreResults = responseModel.results
+                                let info = responseModel.info
+                                strongSelf.characterInfoModel = info
+
+                                let originalCount = strongSelf.characters.count
+                                let newCount = moreResults.count
+                                let total = originalCount+newCount
+                                let startingIndex = total - newCount
+                                let indexPathsToAdd: [IndexPath] = Array(startingIndex..<(startingIndex+newCount)).compactMap({
+                                    return IndexPath(row: $0, section: 0)
+                                })
+                                strongSelf.characters.append(contentsOf: moreResults)
+
+                                DispatchQueue.main.async {
+                                    strongSelf.delegate?.didAddNewCharacters(
+                                         indexPathsToAdd
+                                    )
+
+                                    strongSelf.isLoadingMoreCharacter = false
+                                }
+            case .failure(_):
+                print("Error")
             }
         }
     }
@@ -63,6 +119,40 @@ extension CharesticUIViewModel : UICollectionViewDataSource,UICollectionViewDele
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
-        return CGSize(width: collectionView.frame.width, height: 100)
+        
+        if (!shouldShowLoadMoreIndicator){
+            return .zero
+        } else{
+            return CGSize(width: collectionView.frame.width, height: 100)
+        }
+    
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedCharacter = characters[indexPath.row]
+        delegate?.didSelectCharacter(selectedCharacter)
+    }
+}
+
+extension CharesticUIViewModel : UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard !isLoadingMoreCharacter,
+              !collectionCharecters.isEmpty,
+              shouldShowLoadMoreIndicator,
+              let nextUrlString = characterInfoModel?.next,
+              let url = URL(string: nextUrlString)
+        else {return}
+        
+        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false){
+           [weak self] t in
+            let offset = scrollView.contentOffset.y
+            let fixedHeight = scrollView.frame.size.height
+            let totalContentSize = scrollView.contentSize.height
+            if(offset >= (totalContentSize - fixedHeight) - 120){
+                self?.fetchMoreCharacter(url:url)
+            }
+            t.invalidate()
+        }
+       
     }
 }

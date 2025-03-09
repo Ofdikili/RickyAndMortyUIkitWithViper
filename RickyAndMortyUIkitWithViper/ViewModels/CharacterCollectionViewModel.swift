@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CharacterCollectionViewModel {
+struct CharacterCollectionViewModel : Equatable {
     let name: String
     let status: CharacterStatus
     let imageUrl: URL?
@@ -42,4 +42,8 @@ struct CharacterCollectionViewModel {
             }
         }
     }
+    
+    static func == (lhs: CharacterCollectionViewModel, rhs: CharacterCollectionViewModel) -> Bool {
+          return lhs.name == rhs.name && lhs.status == rhs.status && lhs.imageUrl == rhs.imageUrl
+      }
 }
