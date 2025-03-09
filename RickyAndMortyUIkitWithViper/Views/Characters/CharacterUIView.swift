@@ -16,6 +16,7 @@ class CharacterUIView: UIView {
         
         var collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collection.register(CharacterCollectionViewCell.self, forCellWithReuseIdentifier: CharacterCollectionViewCell.identifier)
+        collection.register(CharacterCollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: CharacterCollectionReusableView.reusableIdentifier)
         
         collection.translatesAutoresizingMaskIntoConstraints = false
         return collection

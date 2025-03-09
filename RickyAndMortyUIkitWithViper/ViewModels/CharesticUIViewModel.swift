@@ -53,5 +53,16 @@ extension CharesticUIViewModel : UICollectionViewDataSource,UICollectionViewDele
         return CGSize(width: cellWidth, height: cellWidth * 1.5 )
     }
     
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionFooter else {
+            fatalError("error")
+        }
+        let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CharacterCollectionReusableView.reusableIdentifier, for: indexPath) as! CharacterCollectionReusableView
+        footer.startAnimation()
+        return footer
+    }
     
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        return CGSize(width: collectionView.frame.width, height: 100)
+    }
 }
