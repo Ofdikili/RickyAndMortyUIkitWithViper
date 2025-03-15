@@ -35,7 +35,7 @@ class MainTabbarViewController: UITabBarController {
             viewController: EpisodeViewController(), name: "Episode", image: "tv"
         )
         let settingsVC = createViewController(
-            viewController: EpisodeViewController(), name: "Settings", image: "gear"
+            viewController: SettingsViewController(), name: "Settings", image: "gear"
         )
          setViewControllers([charactersVC,locationVC,episodeVC,settingsVC], animated: true)
     }

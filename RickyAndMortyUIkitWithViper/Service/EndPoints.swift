@@ -6,7 +6,7 @@
 //
 
 import Foundation
-enum EndPoints : String {
+enum EndPoints : String , CaseIterable , Hashable {
     case character
     case location
     case episode

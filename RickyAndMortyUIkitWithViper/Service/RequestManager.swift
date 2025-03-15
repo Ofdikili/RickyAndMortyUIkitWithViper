@@ -109,4 +109,6 @@ final class RequestManager {
 extension RequestManager {
     static let listCharactersRequest = RequestManager(
         endPoint: .character)
+    static let listEpisodeRequest = RequestManager(
+        endPoint: .episode)
 }

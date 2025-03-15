@@ -17,6 +17,19 @@ class CharactersViewController: UIViewController {
         navigationItem.title = "Characters"
         view.addSubview(charecterUI) 
         configureConstraint()
+        addSearchButton()
+    }
+    
+    private func addSearchButton(){
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .search, target: self, action: #selector(didTapSearch))
+        
+    }
+    
+    @objc private func didTapSearch(){
+        let vc = SearchViewController(config: SearchViewController.Config(type: .character))
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func configureConstraint(){
@@ -37,8 +50,10 @@ extension CharactersViewController : CharesticUIViewModelDelegate {
     }
     
     func didSelectCharacter(_ character: CharacterModel) {
-        print(character.name)
-        navigationController?.pushViewController(CharacterDetailViewController(), animated: true)
+        let detailVm = CharacterDetailUIViewModel(character: character)
+        let detailVc = CharacterDetailViewController(detailVm: detailVm)
+
+        navigationController?.pushViewController(detailVc, animated: true)
     }
     
     

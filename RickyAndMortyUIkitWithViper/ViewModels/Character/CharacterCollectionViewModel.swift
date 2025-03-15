@@ -45,5 +45,5 @@ struct CharacterCollectionViewModel : Equatable {
     
     static func == (lhs: CharacterCollectionViewModel, rhs: CharacterCollectionViewModel) -> Bool {
           return lhs.name == rhs.name && lhs.status == rhs.status && lhs.imageUrl == rhs.imageUrl
-      }
+    }
 }

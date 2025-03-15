@@ -84,7 +84,7 @@ class CharesticUIViewModel : NSObject {
                                     strongSelf.isLoadingMoreCharacter = false
                                 }
             case .failure(_):
-                print("Error")
+                  ("Error")
             }
         }
     }

@@ -16,18 +16,30 @@ enum ServiceFailures : Error {
 
 final class ServiceManager {
     static let shared = ServiceManager()
+    
+    private let cacheManager = APICacheManager()
     private init() {}
     
     public func execute<T : Codable>(_ request:RequestManager,
                                      expecting returningType: T.Type ,
     completion : @escaping (Result<T,Error>) ->Void
     ){
+        if let cachedData = cacheManager.cachedResponse(for: request.endPoint, url: request.url){
+            do {
+                let result = try JSONDecoder().decode(returningType.self, from: cachedData)
+                print("geted cached api response")
+                completion(.success(result))
+            } catch  {
+                completion(.failure(error))
+            }
+            return
+        }
         guard let urlRequest = self.request(from: request) else {
             completion(.failure(ServiceFailures.badUrl))
             return
         }
      let task =  URLSession.shared.dataTask(with: urlRequest){
-            (data,_,error) in
+         [weak self] (data,_,error) in
          if error != nil {
                 completion(.failure(ServiceFailures.invalidRequest))
                 return
@@ -38,6 +50,8 @@ final class ServiceManager {
             }
             do{
                 let decodingData = try JSONDecoder().decode(returningType.self, from: data)
+                self?.cacheManager.setCache(for: request.endPoint, url: request.url, data: data)
+                print("geted network api response")
                 completion(.success(decodingData))
             }catch{
                 completion(.failure(ServiceFailures.decodingFailure))
