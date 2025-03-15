@@ -16,14 +16,57 @@ class EpisodeDetailViewViewModel {
     
     public weak var delegate : EpisodeDetailViewViewModelDelegate?
     
-    private var dataTuple : (EpisodeModel,[CharacterModel])?{
+    private var dataTuple : (episode : EpisodeModel,characters : [CharacterModel])?{
         didSet{
+            createCellViewModels()
             delegate?.didFetchedEpisodeDetails()
         }
     }
     
+    public private(set) var cellViewModels : [SectionType] = []
+    
+    private func createCellViewModels(){
+        guard let dataTuple = dataTuple else {
+            return
+        }
+        let episode = dataTuple.episode
+        let characters = dataTuple.characters
+        
+        var createdString = episode.created
+        if let date = EpisodeInfoCollectionViewCellViewModel.dateFormatter.date(from: episode.created){
+            createdString = EpisodeInfoCollectionViewCellViewModel.shortDateFormatter.string(from: date)
+        }
+            
+        cellViewModels = [
+            .information(viewModels:[
+                .init(title:"Episode Name",value:episode.name),
+                .init(title:"Air Date",value:episode.air_date),
+                .init(title:"Episode",value:episode.episode),
+                .init(title:"Created",value:createdString),
+            ]),
+            .characters(viewModels: characters.compactMap({
+                character in
+                return CharacterCollectionViewModel(name: character.name, status: character.status, imageUrl:URL(string:   character.image) )
+            }))
+        ]
+    }
+    
+    enum SectionType{
+        case information(viewModels : [EpisodeInfoCollectionViewCellViewModel])
+        case characters(viewModels : [CharacterCollectionViewModel])
+    }
+    
     init(endPointUrl: URL?) {
         self.endPointUrl = endPointUrl
+        
+    }
+    
+    public func character(at index : Int)->CharacterModel?{
+        guard let dataTuple = dataTuple else {
+            return nil
+        }
+        
+        return dataTuple.characters[index]
     }
     
     public func fetchEpisodeData(){
@@ -32,10 +75,10 @@ class EpisodeDetailViewViewModel {
             return
         }
         ServiceManager.shared.execute(request, expecting: EpisodeModel.self){
-           result in
+            [weak self] result in
             switch result{
             case .success(let episode):
-                print(episode)
+                self?.fetchRelatedCharacters(episode: episode)
             case .failure(let failure):
                 print(failure)
             }
@@ -58,7 +101,7 @@ class EpisodeDetailViewViewModel {
             return RequestManager(url: $0)
         })
         
-        var group = DispatchGroup()
+        let group = DispatchGroup()
         var characters = [CharacterModel]()
         for request in requests {
             group.enter()
@@ -78,8 +121,8 @@ class EpisodeDetailViewViewModel {
         
         group.notify(queue: .main){
             self.dataTuple = (
-                episode,
-                characters
+                episode : episode,
+                characters : characters
             )
         }
     }

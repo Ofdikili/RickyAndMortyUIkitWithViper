@@ -45,7 +45,7 @@ class EpisodeViewController: UIViewController {
 
 extension EpisodeViewController : EpisodeUIViewModelDelegate {
     func didSelectEpisode(_ episode: EpisodeModel) {
-        let detailVm = EpisodeDetailViewViewModel()
+        let detailVm = EpisodeDetailViewViewModel(endPointUrl: URL(string: episode.url))
         let detailVc = EpisodeDetailViewController(url: URL(string: episode.url))
                 navigationController?.pushViewController(detailVc, animated: true)
     }
